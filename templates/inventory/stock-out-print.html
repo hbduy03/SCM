@@ -1,0 +1,263 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+
+<div class="page-header">
+<div class="page-title">
+<h4>Stock Out Receipt #{{ stock_out.id }}</h4>
+<h6>Stock Out Receipt</h6>
+</div>
+<div class="page-btn">
+<a href="javascript:void(0);" class="btn btn-added mb-2" onclick="window.print()">
+<img src="{% static 'assets/img/icons/printer.svg' %}" alt="img" class="me-1">
+Print Receipt
+</a>
+<a href="{% url 'stock_out_detail' stock_out.id %}" class="btn btn-cancel">
+<img src="{% static 'assets/img/icons/closes.svg' %}" alt="img" class="me-1">
+Close
+</a>
+</div>
+</div>
+
+
+<div class="card">
+<div class="card-body">
+
+<div class="invoice-box">
+<div class="row">
+<div class="col-lg-12">
+<div class="invoice-header text-center mb-4">
+<h2 class="text-uppercase">STOCK OUT RECEIPT</h2>
+<p class="mb-1">Receipt No: <strong>XK-{{ stock_out.id }}</strong></p>
+<p>Date: <strong>{{ stock_out.created_at|date:"d/m/Y" }}</strong></p>
+</div>
+</div>
+</div>
+
+<hr>
+
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Stock Out Information</span></h5>
+</div>
+<div class="col-lg-6">
+<div class="invoice-to">
+<p><strong>Stock Out Type:</strong>
+{% if stock_out.type == 'order' %}
+<span class="badges bg-lightgreen">{{ stock_out.get_type_display }}</span>
+{% elif stock_out.type == 'damaged' %}
+<span class="badges bg-lightred">{{ stock_out.get_type_display }}</span>
+{% else %}
+<span class="badges bg-lightyellow">{{ stock_out.get_type_display }}</span>
+{% endif %}
+</p>
+<p><strong>Reason:</strong> {{ stock_out.reason|default:"--" }}</p>
+{% if stock_out.order %}
+<p><strong>Related Order:</strong>
+<a href="{% url 'order_detail' stock_out.order.id %}">{{ stock_out.order.id }}</a>
+</p>
+{% endif %}
+</div>
+</div>
+<div class="col-lg-6">
+<div class="invoice-to">
+<p><strong>Created By:</strong> {{ stock_out.created_by.get_full_name|default:stock_out.created_by.username }}</p>
+<p><strong>Created Date:</strong> {{ stock_out.created_at|date:"d/m/Y H:i" }}</p>
+{% if stock_out.approved_by %}
+<p><strong>Approved By:</strong> {{ stock_out.approved_by.get_full_name|default:stock_out.approved_by.username }}</p>
+{% endif %}
+</div>
+</div>
+</div>
+
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Stock Out Product Details</span></h5>
+</div>
+<div class="col-lg-12">
+<div class="table-responsive">
+<table class="table table-bordered">
+<thead>
+<tr>
+    <th>No.</th>
+    <th>Product ID</th>
+    <th>Product Name</th>
+    <th>Category</th>
+    <th>Unit</th>
+    <th class="text-end">Quantity</th>
+    <th class="text-end">Unit Price</th>
+    <th class="text-end">Total Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>1</td>
+    <td>{{ stock_out.product.product_id }}</td>
+    <td>
+        <strong>{{ stock_out.product.name }}</strong>
+        {% if stock_out.product.description %}
+        <br><small class="text-muted">{{ stock_out.product.description|truncatewords:10 }}</small>
+        {% endif %}
+    </td>
+    <td>{{ stock_out.product.category.name }}</td>
+    <td>{{ stock_out.product.unit }}</td>
+    <td class="text-end"><strong>{{ stock_out.quantity }}</strong></td>
+    <td class="text-end">{{ stock_out.product.price|floatformat:0 }} ₫</td>
+    <td class="text-end"><strong>{% widthratio stock_out.product.price 1 stock_out.quantity as total %}{{ total|floatformat:0 }} ₫</strong></td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="table-light">
+    <td colspan="7" class="text-end"><strong>TOTAL EXPORT VALUE:</strong></td>
+    <td class="text-end">
+        <h5 class="text-danger mb-0"><strong>{% widthratio stock_out.product.price 1 stock_out.quantity as total %}{{ total|floatformat:0 }} ₫</strong></h5>
+    </td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+</div>
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Inventory Information</span></h5>
+</div>
+<div class="col-lg-12">
+<div class="card">
+<div class="card-body bg-light">
+<div class="row">
+<div class="col-md-4">
+    <p class="mb-2"><strong>Stock Before Export:</strong></p>
+    <h5>{{ old_qty }} {{ stock_out.product.unit }}</h5>
+</div>
+<div class="col-md-4">
+    <p class="mb-2"><strong>Export Quantity:</strong></p>
+    <h5 class="text-danger">-{{ stock_out.quantity }} {{ stock_out.product.unit }}</h5>
+</div>
+<div class="col-md-4">
+    <p class="mb-2"><strong>Stock After Export:</strong></p>
+    <h5 class="text-primary">{{ stock_out.updated_quantity }} {{ stock_out.product.unit }}</h5>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+{% if stock_out.note %}
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Notes</span></h5>
+</div>
+<div class="col-lg-12">
+<div class="alert alert-warning">
+<i class="fas fa-sticky-note me-2"></i>{{ stock_out.note }}
+</div>
+</div>
+</div>
+{% endif %}
+
+
+{% if stock_out.type == 'damaged' %}
+<div class="row mb-4">
+<div class="col-lg-12">
+<div class="alert alert-danger">
+<strong>⚠️ NOTICE:</strong> This is a damaged stock out receipt. Please check and handle damaged goods according to regulations.
+</div>
+</div>
+</div>
+{% elif stock_out.type == 'return_supplier' %}
+<div class="row mb-4">
+<div class="col-lg-12">
+<div class="alert alert-info">
+<strong>ℹ️ NOTICE:</strong> This is a stock return to supplier receipt. A reconciliation record is required.
+</div>
+</div>
+</div>
+{% endif %}
+
+
+<div class="row mt-5">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Confirmation</span></h5>
+</div>
+<div class="col-lg-3 col-sm-6 text-center">
+<p><strong>Prepared By</strong></p>
+<p><em>(Sign, write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">{{ stock_out.created_by.get_full_name|default:stock_out.created_by.username }}</p>
+</div>
+<div class="col-lg-3 col-sm-6 text-center">
+<p><strong>Stockkeeper</strong></p>
+<p><em>(Sign, write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">_____________________</p>
+</div>
+<div class="col-lg-3 col-sm-6 text-center">
+<p><strong>Receiver</strong></p>
+<p><em>(Sign, write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">_____________________</p>
+</div>
+<div class="col-lg-3 col-sm-6 text-center">
+{% if stock_out.approved_by %}
+<p><strong>Approver</strong></p>
+<p><em>(Sign, write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">{{ stock_out.approved_by.get_full_name|default:stock_out.approved_by.username }}</p>
+{% else %}
+<p><strong>Manager</strong></p>
+<p><em>(Sign, write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">_____________________</p>
+{% endif %}
+</div>
+</div>
+
+
+<div class="row mt-4">
+<div class="col-lg-12 text-center">
+<hr>
+<p class="text-muted"><small>Receipt printed at: {{ print_date|date:"d/m/Y H:i:s" }}</small></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<style>
+@media print {
+.page-header,
+.sidebar,
+.header,
+.no-print {
+display: none !important;
+}
+
+.page-wrapper {
+margin: 0 !important;
+padding: 0 !important;
+}
+
+.content {
+margin: 0 !important;
+padding: 20px !important;
+}
+
+.card {
+border: none !important;
+box-shadow: none !important;
+}
+}
+</style>
+
+{% endblock %}

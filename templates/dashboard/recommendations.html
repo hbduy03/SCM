@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4><i data-feather="cpu"></i> AI Restock Recommendations</h4>
+<h6>Smart inventory restocking suggestions</h6>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-4 col-sm-6">
+<div class="dash-count das4">
+<div class="dash-counts">
+<h4>{{ stats.critical }}</h4>
+<h5>Critical Items</h5>
+</div>
+<div class="dash-imgs">
+<i data-feather="alert-circle"></i>
+</div>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-6">
+<div class="dash-count das1">
+<div class="dash-counts">
+<h4>{{ stats.high }}</h4>
+<h5>High Priority</h5>
+</div>
+<div class="dash-imgs">
+<i data-feather="alert-triangle"></i>
+</div>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-6">
+<div class="dash-count das2">
+<div class="dash-counts">
+<h4>{{ stats.total }}</h4>
+<h5>Total Items</h5>
+</div>
+<div class="dash-imgs">
+<i data-feather="package"></i>
+</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="table-top">
+<div class="search-set">
+<h4 class="card-title">Recommendations</h4>
+</div>
+<div class="wordset">
+<ul>
+<li>
+<a href="?urgency=critical" class="btn btn-danger btn-sm {% if urgency_filter == 'critical' %}active{% endif %}">
+Critical
+</a>
+</li>
+<li>
+<a href="?urgency=high" class="btn btn-warning btn-sm {% if urgency_filter == 'high' %}active{% endif %}">
+High
+</a>
+</li>
+<li>
+<a href="?urgency=medium" class="btn btn-info btn-sm {% if urgency_filter == 'medium' %}active{% endif %}">
+Medium
+</a>
+</li>
+<li>
+<a href="{% url 'ai_models:recommendations' %}" class="btn btn-secondary btn-sm">
+All
+</a>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="table-responsive">
+<table class="table datatable">
+<thead>
+<tr>
+<th>Product</th>
+<th>Category</th>
+<th>Current Stock</th>
+<th>30-Day Forecast</th>
+<th>Shortage</th>
+<th>Urgency</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for rec in recommendations %}
+<tr>
+<td>
+<a href="{% url 'product_detail' rec.product.id %}">
+{{ rec.product.name }}
+</a>
+</td>
+<td>{{ rec.product.category.name|default:"-" }}</td>
+<td>{{ rec.current }} {{ rec.product.unit }}</td>
+<td>{{ rec.forecast_30d }} {{ rec.product.unit }}</td>
+<td><strong class="text-danger">{{ rec.shortage }} {{ rec.product.unit }}</strong></td>
+<td>
+{% if rec.urgency == 'critical' %}
+<span class="badges bg-lightred">Critical</span>
+{% elif rec.urgency == 'high' %}
+<span class="badges bg-lightyellow">High</span>
+{% else %}
+<span class="badges bg-lightblue">Medium</span>
+{% endif %}
+</td>
+<td>
+<a href="{% url 'add_stock_in' %}?product={{ rec.product.id }}&quantity={{ rec.shortage }}" 
+   class="btn btn-sm btn-success">
+<i data-feather="plus"></i> Add Stock
+</a>
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="7" class="text-center">
+<p class="text-muted">No recommendations at this time</p>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

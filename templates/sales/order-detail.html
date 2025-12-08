@@ -1,0 +1,354 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Order Details</h4>
+<h6>Order Details - #{{ order.order_id }}</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'order_list' %}" class="btn btn-secondary">
+<i class="fas fa-arrow-left me-1"></i>Go Back
+</a>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="row">
+<div class="col-lg-8 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-info-circle me-2"></i>Order Information
+</h5>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Order ID:</label>
+<p class="mb-0"><strong class="text-primary">{{ order.order_id }}</strong></p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted"><strong>Status:</strong></label>
+<p class="mb-0">
+{% if order.status == 'pending' %}
+<span class="badge bg-warning text-dark">
+<i class="fas fa-clock me-1"></i>{{ order.get_status_display }}
+</span>
+{% elif order.status == 'confirmed' %}
+<span class="badge bg-info">
+<i class="fas fa-spinner me-1"></i>{{ order.get_status_display }}
+</span>
+{% elif order.status == 'shipped' %}
+<span class="badge bg-primary">
+<i class="fas fa-shipping-fast me-1"></i>{{ order.get_status_display }}
+</span>
+{% elif order.status == 'delivered' %}
+<span class="badge bg-success">
+<i class="fas fa-check-circle me-1"></i>{{ order.get_status_display }}
+</span>
+{% else %}
+<span class="badge bg-danger">
+<i class="fas fa-times-circle me-1"></i>{{ order.get_status_display }}
+</span>
+{% endif %}
+</p>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Created Date:</label>
+<p class="mb-0"><i class="far fa-calendar me-1"></i>{{ order.created_at|date:"d/m/Y H:i" }}</p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Last Updated:</label>
+<p class="mb-0"><i class="far fa-clock me-1"></i>{{ order.updated_at|date:"d/m/Y H:i" }}</p>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Created By:</label>
+<p class="mb-0"><i class="fas fa-user me-1"></i>{{ order.created_by.username }}</p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Payment Method:</label>
+<p class="mb-0">
+{% if order.payment_method == 'cash' %}
+<i class="fas fa-money-bill-wave me-1 text-success"></i>Cash
+{% elif order.payment_method == 'transfer' %}
+<i class="fas fa-university me-1 text-primary"></i>Bank Transfer
+{% else %}
+<i class="fas fa-truck me-1 text-info"></i>COD
+{% endif %}
+</p>
+</div>
+</div>
+</div>
+
+{% if order.note %}
+<div class="row">
+<div class="col-12">
+<div class="alert alert-info">
+<i class="fas fa-sticky-note me-2"></i><strong>Note:</strong> {{ order.note }}
+</div>
+</div>
+</div>
+{% endif %}
+</div>
+</div>
+
+<div class="card mt-4">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-user-circle me-2"></i>Customer Information
+</h5>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Customer Name:</label>
+<p class="mb-0"><strong>{{ order.customer_name }}</strong></p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Phone Number:</label>
+<p class="mb-0">
+<i class="fas fa-phone me-1 text-success"></i>
+<a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a>
+</p>
+</div>
+</div>
+</div>
+
+{% if order.customer_email %}
+<div class="row">
+<div class="col-12">
+<div class="info-item mb-3">
+<label class="text-muted">Email:</label>
+<p class="mb-0">
+<i class="fas fa-envelope me-1 text-primary"></i>
+<a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a>
+</p>
+</div>
+</div>
+</div>
+{% endif %}
+
+<div class="row">
+<div class="col-12">
+<div class="info-item">
+<label class="text-muted">Delivery Address:</label>
+<p class="mb-0">
+<i class="fas fa-map-marker-alt me-1 text-danger"></i>
+{{ order.customer_address }}
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="card mt-4">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-shopping-cart me-2"></i>Product List
+</h5>
+</div>
+
+<div class="table-responsive">
+<table class="table table-bordered">
+<thead class="table-light">
+<tr>
+<th width="5%" class="text-center">#</th>
+<th width="10%" class="text-center">Image</th>
+<th width="30%">Product</th>
+<th width="15%" class="text-end">Unit Price</th>
+<th width="10%" class="text-center">Quantity</th>
+<th width="15%" class="text-end">Subtotal</th>
+</tr>
+</thead>
+<tbody>
+{% for item in order_items %}
+<tr>
+<td class="text-center">{{ forloop.counter }}</td>
+<td class="text-center">
+{% if item.product.image %}
+<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+class="product-img-table">
+{% else %}
+<div class="no-image-placeholder">
+<i class="fas fa-image"></i>
+</div>
+{% endif %}
+</td>
+<td>
+<strong>{{ item.product.name }}</strong><br>
+<small class="text-muted">Code: {{ item.product.product_id }}</small>
+</td>
+<td class="text-end">{{ item.unit_price|floatformat:0 }} ₫</td>
+<td class="text-center">
+<strong>{{ item.quantity }}</strong>
+<span>{{ item.product.unit }}</span>
+</td>
+<td class="text-end"><strong>{{ item.subtotal|floatformat:0 }} ₫</strong></td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="6" class="text-center text-muted">No products found</td>
+</tr>
+{% endfor %}
+</tbody>
+<tfoot>
+<tr class="table-light">
+<td colspan="5" class="text-end"><strong>Total:</strong></td>
+<td class="text-end">
+<h5 class="text-danger mb-0">
+<strong>{{ order.total_amount|floatformat:0 }} ₫</strong>
+</h5>
+</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-cogs me-2"></i>Actions
+</h5>
+</div>
+
+{% if order.status == 'pending' %}
+<a href="{% url 'confirm_order' order.pk %}"
+class="btn btn-success w-100 mb-2"
+onclick="return confirm('Confirm and issue stock for this order?')">
+<i class="fas fa-check-circle me-1"></i>Confirm & Issue Stock
+</a>
+{% endif %}
+
+{% if order.status == 'confirmed' %}
+<form method="post" action="{% url 'order_update_status' order.pk %}">
+{% csrf_token %}
+<input type="hidden" name="status" value="shipped">
+<button type="submit" class="btn btn-primary w-100 mb-2">
+<i class="fas fa-shipping-fast me-1"></i>Mark as Shipping
+</button>
+</form>
+{% endif %}
+
+{% if order.status == 'shipped' %}
+<form method="post" action="{% url 'order_update_status' order.pk %}">
+{% csrf_token %}
+<input type="hidden" name="status" value="delivered">
+<button type="submit" class="btn btn-success w-100 mb-2">
+<i class="fas fa-check-circle me-1"></i>Complete Order
+</button>
+</form>
+{% endif %}
+
+{% if order.status != 'delivered' and order.status != 'cancelled' %}
+<a href="{% url 'cancel_order' order.pk %}"
+class="btn btn-danger w-100 mb-2"
+onclick="return confirm('Are you sure you want to cancel this order?')">
+<i class="fas fa-times-circle me-1"></i>Cancel Order
+</a>
+{% endif %}
+
+{% if order.status == 'delivered' or order.status == 'cancelled' %}
+<div class="alert alert-secondary text-center mb-2">
+<i class="fas fa-info-circle me-1"></i>
+Order is {{ order.get_status_display|lower }}
+</div>
+{% endif %}
+
+<a href="{% url 'print_order' order.id %}" class="btn btn-outline-primary w-100 mb-2" target="_blank">
+<i class="fas fa-print me-1"></i>Print Order
+</a>
+
+{% if user.role == 'admin' or user.role == 'sales' and order.status == 'pending' %}
+<a href="{% url 'edit_order' order.id %}" class="btn btn-outline-warning w-100">
+<i class="fas fa-edit me-1 "></i>Edit Order
+</a>
+{% endif %}
+</div>
+</div>
+
+<div class="card mt-4">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-chart-bar me-2"></i>Statistics
+</h5>
+</div>
+
+<div class="stats-box">
+<div class="stats-item">
+<i class="fas fa-box text-primary"></i>
+<div class="stats-info">
+<h6>Total Products</h6>
+<p class="mb-0">{{ order_items|length }} items</p>
+</div>
+</div>
+<div class="stats-item mt-3">
+<i class="fas fa-cubes text-success"></i>
+<div class="stats-info">
+<h6>Total Quantity</h6>
+<p class="mb-0">
+{% with total_qty=0 %}
+{% for item in order_items %}
+{% widthratio item.quantity 1 1 as qty %}
+{{ qty|add:total_qty }}
+{% endfor %}
+{% endwith %}
+units
+</p>
+</div>
+</div>
+<div class="stats-item mt-3">
+<i class="fas fa-money-bill-wave text-danger"></i>
+<div class="stats-info">
+<h6>Total Value</h6>
+<p class="mb-0 text-danger">
+<strong>{{ order.total_amount|floatformat:0 }} ₫</strong>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

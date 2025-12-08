@@ -1,0 +1,276 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Chi tiết Phiếu Xuất kho</h4>
+<h6>Stock Out Details - ID: #{{ stock_out.id }}</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'stock_out_list' %}" class="btn btn-secondary">
+<i class="fas fa-arrow-left me-1"></i>Quay lại
+</a>
+</div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="row">
+<div class="col-lg-8 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-file-invoice me-2"></i>Thông tin phiếu xuất
+</h5>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted">Mã phiếu/ID:</label>
+    <p class="mb-0"><strong class="text-primary">#{{ stock_out.id }}</strong></p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted"><strong>Trạng thái:</strong></label>
+    <p class="mb-0">
+        {% if stock_out.is_disable %}
+            <p class="mb-0">
+                <span class="badge bg-danger">
+                    <i class="fas fa-times-circle me-1"></i>Đã hủy phiếu
+                </span>
+            </p>
+        {% elif stock_out.approved_by %}
+            <span class="badge bg-success">
+                <i class="fas fa-check-circle me-1"></i>Đã duyệt & Xuất kho
+            </span>
+        {% else %}
+            <span class="badge bg-warning text-dark">
+                <i class="fas fa-clock me-1"></i>Chờ duyệt
+            </span>
+        {% endif %}
+    </p>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted">Ngày tạo:</label>
+    <p class="mb-0"><i class="far fa-calendar me-1"></i>{{ stock_out.created_at|date:"d/m/Y H:i" }}</p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted">Type Stock In:</label>
+    <p class="mb-0"><span class="badge bg-info"><i class="fas fa-tag me-1"></i>{{ stock_out.type|upper  }}</span></p>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted">Người tạo:</label>
+    <p class="mb-0"><i class="fas fa-user me-1"></i>{{ stock_out.created_by.get_full_name|default:stock_out.created_by.username }}</p>
+</div>
+</div>
+<div class="col-lg-6 col-sm-6 col-12">
+<div class="info-item mb-3">
+    <label class="text-muted">Lý do xuất kho:</label>
+    <p class="mb-0">
+
+            {{ stock_out.reason}}
+
+    </p>
+</div>
+</div>
+</div>
+
+{% if stock_out.order %}
+<div class="row">
+<div class="col-12">
+<div class="alert alert-secondary">
+    <i class="fas fa-receipt me-2"></i>
+    <strong>Liên kết Đơn hàng:</strong>
+    <a href="{% url 'order_detail' stock_out.order.id %}" class="text-primary">
+        {{ stock_out.order.order_id }}
+    </a>
+</div>
+</div>
+</div>
+{% endif %}
+
+{% if stock_out.note %}
+<div class="row">
+<div class="col-12">
+<div class="alert alert-warning">
+    <i class="fas fa-sticky-note me-2"></i><strong>Ghi chú chi tiết:</strong> {{ stock_out.note }}
+</div>
+</div>
+</div>
+{% endif %}
+</div>
+</div>
+
+<div class="card mt-4">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-box-open me-2"></i>Sản phẩm xuất kho
+</h5>
+</div>
+
+<div class="table-responsive">
+<table class="table table-bordered">
+<thead class="table-light">
+    <tr>
+        <th width="10%" class="text-center">Hình ảnh</th>
+        <th width="35%">Sản phẩm</th>
+        <th width="20%" class="text-center">Đơn vị</th>
+        <th width="15%" class="text-center">Số lượng xuất</th>
+        <th width="20%" class="text-end">Tồn kho hiện tại</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td class="text-center">
+            {% if stock_out.product.image %}
+                <img src="{{ stock_out.product.image.url }}" alt="{{ stock_out.product.name }}"
+                     class="product-img-table">
+            {% else %}
+                <div class="no-image-placeholder">
+                    <i class="fas fa-image"></i>
+                </div>
+            {% endif %}
+        </td>
+        <td>
+            <strong>{{ stock_out.product.name }}</strong><br>
+            <small class="text-muted">Mã: {{ stock_out.product.product_id }}</small>
+        </td>
+        <td class="text-center">{{ stock_out.product.unit }}</td>
+        <td class="text-center">
+            <h5 class="text-danger mb-0">
+                <strong>{{ stock_out.quantity|default:0 }}</strong>
+            </h5>
+        </td>
+        <td class="text-end">
+            {% if stock_out.product.inventory.quantity is not None %}
+                {{ stock_out.product.inventory.quantity }} {{ stock_out.product.unit }}
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-user-shield me-2"></i>Thông tin Phê duyệt
+</h5>
+</div>
+
+<div class="info-item mb-3">
+<label class="text-muted">Người duyệt:</label>
+{% if stock_out.approved_by %}
+<p class="mb-0">
+    <strong class="text-success">{{ stock_out.approved_by.get_full_name|default:stock_out.approved_by.username }}</strong>
+</p>
+{% else %}
+<p class="mb-0"><strong class="text-warning">Chưa được duyệt</strong></p>
+{% endif %}
+</div>
+
+<div class="info-item mb-3">
+<label class="text-muted">Ngày duyệt:</label>
+<p class="mb-0">
+{% if stock_out.approved_by %}
+    <i class="far fa-calendar-check me-1"></i>{{ stock_out.update_at|date:"d/m/Y H:i" }}
+{% else %}
+    <i class="far fa-minus-square me-1"></i>Chưa xác định
+{% endif %}
+</p>
+</div>
+</div>
+</div>
+
+<div class="card mt-4">
+<div class="card-body">
+<div class="card-header-custom pb-3 mb-3">
+<h5 class="card-title">
+<i class="fas fa-cogs me-2"></i>Thao tác
+</h5>
+</div>
+
+{% if user.role != 'admin' %}
+<div class="alert alert-secondary text-center mb-2">
+    <i class="fas fa-lock me-1"></i>
+    Chỉ Admin mới có thể xác nhận phiếu
+</div>
+
+{% elif stock_out.approved_by %}
+<div class="alert alert-info text-center mb-2">
+    <i class="fas fa-check me-1"></i>
+    Phiếu đã được duyệt
+</div>
+
+{% elif not stock_out.is_disable %}
+<a href="{% url 'confirm_stock_out' stock_out.id %}"
+   class="btn btn-success w-100 mb-2"
+   onclick="return confirm('Xác nhận và xuất kho cho đơn hàng này?')">
+    <i class="fas fa-check-circle me-1"></i>Xác nhận & Xuất kho
+</a>
+{% endif %}
+{% if user.role == 'admin' and not stock_out.is_disable %}
+<a href="{% url 'cancel_stock_out' stock_out.id %}"
+class="btn btn-danger w-100 mb-2"
+onclick="return confirm('Hủy phiếu nhập và điều chỉnh tồn kho?\n\nLưu ý: Hành động này sẽ giảm tồn kho hiện tại!')">
+<i class="fas fa-times-circle me-1"></i>Hủy phiếu nhập
+</a>
+{% elif user.role == 'admin' %}
+<div class="alert alert-secondary text-center mb-2">
+<i class="fas fa-lock me-1"></i>
+Phiếu đã được hủy
+</div>
+{% else %}
+<div class="alert alert-secondary text-center mb-2">
+<i class="fas fa-lock me-1"></i>
+Chỉ Admin mới có thể hủy phiếu
+</div>
+{% endif %}
+                <a href="{% url 'print_stock_out' stock_out.id %}" class="btn btn-outline-primary w-100 mb-2" target="_blank">
+<i class="fas fa-print me-1"></i>In phiếu đơn hàng
+</a>
+{% if user.profile.role == 'admin' %}
+<a href="" class="btn btn-outline-warning w-100">
+<i class="fas fa-edit me-1"></i>Chỉnh sửa đơn hàng
+</a>
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

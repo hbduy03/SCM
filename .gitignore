@@ -1,1 +1,9 @@
 /venv/
+/apps/authentication/migrations/
+/apps/inventory/migrations/
+/apps/luu tru/
+/apps/sales/migrations/
+/media/assets/img/avatars/
+/media/product/
+/.env
+/media/models/forecasting_model.pkl

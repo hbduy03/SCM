@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+
+<div class="page-header">
+<div class="page-title">
+<h4>Order #{{ order.order_id }}</h4>
+<h6>Order Receipt</h6>
+</div>
+<div class="page-btn">
+<a href="javascript:void(0);" class="btn btn-added mb-2" onclick="window.print()">
+<img src="{% static 'assets/img/icons/printer.svg' %}" alt="img" class="me-1">
+Print Order
+</a>
+<a href="{% url 'order_detail' order.id %}" class="btn btn-cancel">
+<img src="{% static 'assets/img/icons/closes.svg' %}" alt="img" class="me-1">
+Close
+</a>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="invoice-box">
+
+<div class="text-center mb-4">
+<h2 class="text-uppercase">SALES INVOICE</h2>
+<p class="mb-1">Order ID: <strong>{{ order.order_id }}</strong></p>
+<p>Created Date: <strong>{{ order.created_at|date:"d/m/Y H:i" }}</strong></p>
+</div>
+
+<hr>
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Customer Information</span></h5>
+</div>
+
+<div class="col-lg-6">
+<p><strong>Name:</strong> {{ order.customer_name }}</p>
+<p><strong>Email:</strong> {{ order.customer_email }}</p>
+<p><strong>Phone:</strong> {{ order.customer_phone }}</p>
+</div>
+
+<div class="col-lg-6">
+<p><strong>Delivery Address:</strong><br>{{ order.customer_address }}</p>
+<p><strong>Payment Method:</strong>
+{% if order.payment_method == 'cash' %}
+    <span class="badges bg-lightgreen">Cash</span>
+{% elif order.payment_method == 'transfer' %}
+    <span class="badges bg-lightpurple">Bank Transfer</span>
+{% else %}
+    <span class="badges bg-lightyellow">COD</span>
+{% endif %}
+</p>
+<p><strong>Status:</strong>
+{% if order.status == 'pending' %}
+    <span class="badges bg-lightyellow">Pending</span>
+{% elif order.status == 'confirmed' %}
+    <span class="badges bg-lightgreen">Confirmed</span>
+{% elif order.status == 'shipped' %}
+    <span class="badges bg-lightpurple">Shipping</span>
+{% elif order.status == 'delivered' %}
+    <span class="badges bg-darkgreen text-white">Completed</span>
+{% else %}
+    <span class="badges bg-lightred">Cancelled</span>
+{% endif %}
+</p>
+</div>
+</div>
+
+{% if order.note %}
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Notes</span></h5>
+<div class="alert alert-warning">
+<i class="fas fa-info-circle me-2"></i>{{ order.note }}
+</div>
+</div>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Order Details</span></h5>
+</div>
+
+<div class="col-lg-12">
+<div class="table-responsive">
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Code</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Unit</th>
+            <th class="text-end">Qty</th>
+            <th class="text-end">Unit Price</th>
+            <th class="text-end">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order_items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.product.product_id }}</td>
+            <td>
+                <strong>{{ item.product.name }}</strong>
+                {% if item.product.description %}
+                <br><small class="text-muted">{{ item.product.description|truncatewords:10 }}</small>
+                {% endif %}
+            </td>
+            <td>{{ item.product.category.name }}</td>
+            <td>{{ item.product.unit }}</td>
+            <td class="text-end">{{ item.quantity }}</td>
+            <td class="text-end">{{ item.unit_price|floatformat:0 }} ₫</td>
+            <td class="text-end">{{ item.subtotal|floatformat:0 }} ₫</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+    <tfoot>
+        <tr class="table-light">
+            <td colspan="7" class="text-end"><strong>TOTAL:</strong></td>
+            <td class="text-end">
+                <h5 class="text-primary mb-0">
+                    <strong>{{ order.total_amount|floatformat:0 }} ₫</strong>
+                </h5>
+            </td>
+        </tr>
+    </tfoot>
+
+</table>
+</div>
+</div>
+</div>
+
+<div class="row mb-4">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Order Processing Info</span></h5>
+</div>
+
+<div class="col-lg-12">
+<p><strong>Created By:</strong>
+{{ order.created_by.get_full_name|default:order.created_by.username }}
+</p>
+<p><strong>Last Updated:</strong>
+{{ order.updated_at|date:"d/m/Y H:i" }}
+</p>
+</div>
+</div>
+
+<div class="row mt-5">
+<div class="col-lg-12">
+<h5 class="form-title"><span>Confirmation</span></h5>
+</div>
+
+<div class="col-lg-4 text-center">
+<p><strong>Prepared By</strong></p>
+<p><em>(Sign and write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">
+{{ order.created_by.get_full_name|default:order.created_by.username }}
+</p>
+</div>
+
+<div class="col-lg-4 text-center">
+<p><strong>Delivery Person</strong></p>
+<p><em>(Sign and write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">_____________________</p>
+</div>
+
+<div class="col-lg-4 text-center">
+<p><strong>Customer</strong></p>
+<p><em>(Sign and write full name)</em></p>
+<br><br><br>
+<p class="border-top pt-2 d-inline-block">_____________________</p>
+</div>
+</div>
+
+<div class="row mt-4">
+<div class="col-lg-12 text-center">
+<hr>
+<p class="text-muted"><small>Invoice printed at: {{ print_date|date:"d/m/Y H:i:s" }}</small></p>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<style>
+@media print {
+    .page-header,
+    .sidebar,
+    .header,
+    .no-print {
+        display: none !important;
+    }
+    .page-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .content {
+        margin: 0 !important;
+        padding: 20px !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+{% endblock %}

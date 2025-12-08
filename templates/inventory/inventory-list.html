@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Inventory List</h4>
+<h6>Manage your products</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'add_stock_in' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Create Stock In</a>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="table-top">
+</div>
+
+<div class="card mb-0" id="filter_inputs">
+</div>
+    <div class="alert alert-info mt-3">
+    <strong>Legend:</strong>
+    <ul class="mb-0">
+        <li><span class="badge bg-danger">Low Stock</span> - Quantity ≤ Min Level</li>
+        <li><span class="badge bg-warning">Overstock</span> - Quantity ≥ Max Level</li>
+        <li><span class="badge bg-success">Normal</span> - Safe Range</li>
+    </ul>
+</div>
+<div class="table-responsive">
+<table class="table datanew">
+<thead>
+<tr>
+<th>Product ID</th>
+<th>Product Name</th>
+<th>Category</th>
+<th>Stock</th>
+<th>Min Stock</th>
+<th>Max Stock</th>
+<th>Status</th>
+<th>Last Updated</th>
+</tr>
+</thead>
+<tbody>
+{% for inventory in inventories %}
+<tr {% if inventory.is_low_stock %} class="table-danger"
+    {% elif inventory.quantity >= inventory.max_quantity %} class="table-warning"
+    {% endif %}>
+<td>{{ inventory.product.product_id }}</td>
+<td class="productimgname" data-order="{{ inventory.product.name }}">
+<a href="javascript:void(0);" class="product-img">
+    {% if inventory.product.image %}
+<img src="{{ inventory.product.image.url }}" alt="product">
+    {% else %}
+    <img src="{% static 'assets/img/product/noimage.png' %}" alt="Category Image">
+    {% endif %}
+</a>
+<a href="javascript:void(0);">{{inventory.product.name}}</a>
+</td>
+<td>{{ inventory.product.category.name }}</td>
+<td data-order="{{ inventory.quantity }}">
+<strong>{{ inventory.quantity }}</strong> {{ inventory.product.unit }}
+</td>
+<td>{{ inventory.min_quantity }}</td>
+<td>{{ inventory.max_quantity }}</td>
+<td>
+{% if inventory.is_low_stock %}
+<span class="badge bg-danger">
+    <i class="fas fa-exclamation-triangle"></i> Low Stock
+</span>
+{% elif inventory.quantity >= inventory.max_quantity %}
+<span class="badge bg-warning">
+    <i class="fas fa-box"></i> Overstock
+</span>
+{% else %}
+<span class="badge bg-success">
+    <i class="fas fa-check"></i> Normal
+</span>
+{% endif %}
+</td>
+<td data-order="{{ inventory.updated_at|date:'Y-m-d H:i' }}">{{ inventory.last_updated|date:"d/m/Y H:i" }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

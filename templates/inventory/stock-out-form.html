@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Create Stock Out</h4>
+                <h6>Create new Stock Out ticket</h6>
+            </div>
+            <div class="page-btn">
+                <a href="{% url 'stock_out_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Go back
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="stockOutForm">
+                    {% csrf_token %}
+                    <div class="row">
+
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Product</label>
+                                {{ form.product }}
+                                <small id="currentStock" class="d-block mt-1"></small>
+                                <small class="text-danger">{{ form.product.errors }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Stock Out Type</label>
+                                {{ form.type }}
+                                <small class="text-danger">{{ form.type.errors }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                {{ form.quantity }}
+                                <small class="text-danger">{{ form.quantity.errors }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12 col-12">
+                            <div class="form-group">
+                                <label>Reason</label>
+                                {{ form.reason }}
+                                <small class="text-muted">Example: Damaged goods, Gift for VIP client...</small>
+                                <small class="text-danger">{{ form.reason.errors }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label>Note</label>
+                                {{ form.note }}
+                                <small class="text-danger">{{ form.note.errors }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" class="btn btn-submit me-2">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const productsStock = {{ products_stock|safe }};
+    const productSelect = document.getElementById('id_product');
+    const quantityInput = document.getElementById('id_quantity');
+    const stockDisplay = document.getElementById('currentStock');
+
+    productSelect.addEventListener('change', function() {
+        const productId = this.value;
+
+        if (productId && productsStock[productId] !== undefined) {
+            const stock = productsStock[productId];
+            stockDisplay.innerHTML = `<i class="fas fa-box"></i> Current inventory: <strong class="${stock > 0 ? 'text-success' : 'text-danger'}">${stock}</strong>`;
+
+            if (quantityInput) {
+                quantityInput.max = stock;
+            }
+        } else {
+            stockDisplay.innerHTML = '';
+            if (quantityInput) {
+                quantityInput.removeAttribute('max');
+            }
+        }
+    });
+</script>
+{% endblock %}

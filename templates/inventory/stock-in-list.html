@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Stock In List</h4>
+<h6>Manage your stock-in records</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'add_stock_in' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New Stock In</a>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="table-top">
+</div>
+
+<div class="card mb-0" id="filter_inputs">
+</div>
+
+<div class="table-responsive">
+<table class="table datanew">
+<thead>
+<tr>
+<th>ID</th>
+<th>Product Name</th>
+<th>Supplier</th>
+<th>Total Cost</th>
+    <th>Qty</th>
+<th>Updated Qty</th>
+<th>Active?</th>
+<th>Approved by</th>
+<th>Created By</th>
+<th>Created At</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for stock_in in stock_ins %}
+<tr>
+<td>{{stock_in.id}}
+</td>
+<td class="productimgname">
+<a href="javascript:void(0);" class="product-img">
+    {% if stock_in.product.image %}
+<img src="{{ stock_in.product.image.url }}" alt="product">
+    {% else %}
+    <img src="{% static 'assets/img/product/noimage.png' %}" alt="Product Image">
+    {% endif %}
+</a>
+<a href="javascript:void(0);">{{stock_in.product.name}}</a>
+</td>
+<td>{{stock_in.supplier.name}}</td>
+<td>{{stock_in.total_cost}}</td>
+    <td><h6><span class="badge bg-success">+{{stock_in.quantity}}</span></h6></td>
+<td><h6><span class="badge text-green">{{stock_in.updated_quantity}}</span></h6></td>
+<td>
+    {% if stock_in.is_disable %}
+    <span class="badge bg-danger">No</span>
+    {% else %}
+    <span class="badge bg-success">Yes</span>
+    {% endif %}
+</td>
+<td>
+    {% if stock_in.approved_by %}
+        {{ stock_in.approved_by.get_full_name|default:stock_in.approved_by.username }}
+    {% else %}
+        <span class="badge bg-warning text-dark">pending</span>
+    {% endif %}
+</td>
+<td>{{stock_in.created_by.get_full_name|default:stock_in.created_by.username}}</td>
+<td>{{stock_in.created_at|date:"d M Y H:i"}}</td>
+<td>
+<a class="me-3" href="{% url 'stock_in_detail' stock_in.id %}">
+<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+</a>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

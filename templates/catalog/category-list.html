@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Categories list</h4>
+<h6>Manage your categories</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'add_category' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New Category</a>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="card">
+<div class="card-body">
+<div class="table-top">
+</div>
+
+<div class="card mb-0" id="filter_inputs">
+</div>
+
+<div class="table-responsive">
+<table class="table datanew">
+<thead>
+<tr>
+<th>Category ID</th>
+<th>Category Name</th>
+<th>Description </th>
+<th>Created At</th>
+<th>Active?</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for category in categories %}
+<tr>
+<td>{{category.category_id}}</td>
+<td>{{category.name}}</td>
+<td>{{category.description|default:"N/A"|truncatechars:100}}</td>
+<td>{{category.created_at|date:"d M Y H:i"}}</td>
+    <td>
+    {% if not category.is_active %}
+    <span class="badge bg-danger">No</span>
+    {% else %}
+    <span class="badge bg-success">Yes</span>
+    {% endif %}
+    </td>
+<td>
+<a class="me-3" href="{% url 'edit_category' category.id %}">
+<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+</a>
+<a class="confirm-text" href="{% url 'delete_category' category.id %}">
+<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

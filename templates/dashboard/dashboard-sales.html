@@ -1,0 +1,321 @@
+
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Dashboard - Sales</h4>
+                <h6>Hiệu suất bán hàng của tôi</h6>
+            </div>
+        </div>
+
+        <!-- STATS CARDS -->
+        <div class="row">
+            <div class="col-lg-3 col-sm-6 col-12">
+                <div class="dash-widget">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash1.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ stats.my_revenue_month|floatformat:0 }} <span>₫</span></h5>
+                        <h6>Doanh số tháng này</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12">
+                <div class="dash-widget dash1">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash2.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ stats.my_orders_month }}</h5>
+                        <h6>Đơn hàng tháng này</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12">
+                <div class="dash-widget dash2">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash3.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ stats.my_orders_today }}</h5>
+                        <h6>Đơn hàng hôm nay</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12">
+                <div class="dash-widget dash3">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash4.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ stats.my_pending_orders }}</h5>
+                        <h6>Đơn chờ xử lý</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div class="row">
+            <!-- Biểu đồ doanh số 7 ngày -->
+            <div class="col-lg-8 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0">
+                        <h5 class="card-title mb-0">Doanh số 7 ngày gần đây</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="mySalesChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biểu đồ đơn hàng theo trạng thái -->
+            <div class="col-lg-4 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0">
+                        <h5 class="card-title mb-0">Đơn hàng của tôi</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="myOrderStatusChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP PRODUCTS -->
+        <div class="row">
+            <div class="col-lg-6 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0">
+                        <h5 class="card-title mb-0">Sản phẩm tôi bán nhiều nhất</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="myTopProductsChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cảnh báo tồn kho -->
+            <div class="col-lg-6 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">Cảnh báo hàng sắp hết</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Còn lại</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inv in low_stock_products %}
+                                    <tr>
+                                        <td>{{ inv.product.name }}</td>
+                                        <td><span class="badges bg-lightred">{{ inv.quantity }} {{ inv.product.unit }}</span></td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">Tất cả sản phẩm đều đủ hàng</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ĐƠN HÀNG CỦA TÔI -->
+        <div class="row">
+            <div class="col-lg-12 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">Đơn hàng gần đây của tôi</h4>
+                        <div class="graph-sets">
+                            <a href="{% url 'order_list' %}"><button class="btn btn-added">
+                                <img src="{% static 'assets/img/icons/plus.svg' %}" alt="img">Tạo đơn mới
+                            </button></a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table datanew">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>SĐT</th>
+                                        <th>Trạng thái</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in my_recent_orders %}
+                                    <tr>
+                                        <td>{{ order.order_code }}</td>
+                                        <td>{{ order.customer_name }}</td>
+                                        <td>{{ order.customer_phone }}</td>
+                                        <td>
+{% if order.status == 'pending' %}
+    <span class="badge bg-warning text-dark">
+        <i class="fas fa-clock me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'confirmed' %}
+    <span class="badge bg-info">
+        <i class="fas fa-spinner me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'shipped' %}
+    <span class="badge bg-primary">
+        <i class="fas fa-shipping-fast me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'delivered' %}
+    <span class="badge bg-success">
+        <i class="fas fa-check-circle me-1"></i>{{ order.get_status_display }}
+    </span>
+{% else %}
+    <span class="badge bg-danger">
+        <i class="fas fa-times-circle me-1"></i>{{ order.get_status_display }}
+    </span>
+{% endif %}
+                                        </td>
+                                        <td>{{ order.total_amount|floatformat:0 }} ₫</td>
+                                        <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <a class="me-3" href="{% url 'order_detail' order.id %}">
+                                                <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                            </a>
+                                            {% if order.status == 'pending' %}
+                                            <a class="me-3" href="{% url 'edit_order' order.id %}">
+                                                <img src="{% static 'assets/img/icons/edit.svg' %}" alt="img">
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Bạn chưa tạo đơn hàng nào</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== MY SALES CHART (7 ngày) ==========
+const mySalesData = {{ my_sales_by_day|safe }};
+const mySalesCtx = document.getElementById('mySalesChart').getContext('2d');
+new Chart(mySalesCtx, {
+    type: 'line',
+    data: {
+        labels: mySalesData.map(d => d.date),
+        datasets: [{
+            label: 'Doanh số (₫)',
+            data: mySalesData.map(d => d.revenue),
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value.toLocaleString('vi-VN') + '₫';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// ========== MY ORDER STATUS CHART (Doughnut) ==========
+const myOrderStatusData = {{ my_order_status|safe }};
+const myOrderStatusCtx = document.getElementById('myOrderStatusChart').getContext('2d');
+new Chart(myOrderStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: myOrderStatusData.map(d => d.status),
+        datasets: [{
+            data: myOrderStatusData.map(d => d.count),
+            backgroundColor: [
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(255, 99, 132, 0.7)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// ========== MY TOP PRODUCTS CHART (Bar) ==========
+const myTopProductsData = {{ my_top_products|safe }};
+const myTopProductsCtx = document.getElementById('myTopProductsChart').getContext('2d');
+new Chart(myTopProductsCtx, {
+    type: 'bar',
+    data: {
+        labels: myTopProductsData.map(d => d.product__name),
+        datasets: [{
+            label: 'Số lượng bán',
+            data: myTopProductsData.map(d => d.total_sold),
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

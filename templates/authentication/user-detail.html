@@ -1,0 +1,298 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+    <h4>User Profile</h4>
+    <h6>Details and performance metrics</h6>
+</div>
+<div class="page-btn">
+    <a href="{% url 'user_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Go back
+    </a>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-4">
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="profile-avatar mb-3">
+                {% if employee.avatar %}
+                    <img src="{{ employee.avatar.url }}" alt="avatar"
+                         style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                    <div class="avatar avatar-xl bg-light-primary rounded-circle mx-auto mb-3">
+                        <i class="fas fa-user fa-4x"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <h4>{{ employee.get_full_name|default:employee.username }}</h4>
+            <p class="text-muted">@{{ employee.username }}</p>
+
+            <div class="mb-3">
+                {% if employee.role == 'admin' %}
+                    <span >{{ employee.get_role_display }}</span>
+                {% elif employee.role == 'sales' %}
+                    <span >{{ employee.get_role_display }}</span>
+                {% elif employee.role == 'warehouse' %}
+                    <span>{{ employee.get_role_display }}</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {% if employee.is_active %}
+                    <span class="badges bg-lightgreen">
+                        <i class="fas fa-check-circle me-1"></i>Active
+                    </span>
+                {% else %}
+                    <span class="badges bg-lightred">
+                        <i class="fas fa-times-circle me-1"></i>Inactive
+                    </span>
+                {% endif %}
+            </div>
+
+            <hr>
+
+            <div class="text-start">
+                <p class="mb-2">
+                    <i class="fas fa-envelope text-primary me-2"></i>
+                    <strong>Email:</strong> {{ employee.email|default:"--" }}
+                </p>
+                <p class="mb-2">
+                    <i class="fas fa-phone text-success me-2"></i>
+                    <strong>Phone:</strong> {{ employee.phone|default:"--" }}
+                </p>
+                <p class="mb-2">
+                    <i class="fas fa-building text-info me-2"></i>
+                    <strong>Department:</strong> {{ employee.department|default:"--" }}
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-calendar text-warning me-2"></i>
+                    <strong>Joined:</strong> {{ employee.date_joined|date:"d/m/Y" }}
+                </p>
+            </div>
+
+            <hr>
+
+            {% if request.user.role == 'admin' and employee.role != 'admin' %}
+            <div class="d-grid gap-2">
+                {% if employee.is_active %}
+                    <a href="{% url 'user_deactivate' employee.pk %}"
+                       class="btn btn-danger"
+                       onclick="return confirm('Deactivate account {{ employee.username }}?')">
+                        <i class="fas fa-user-slash me-1"></i>Deactivate
+                    </a>
+                {% else %}
+                    <a href="{% url 'user_activate' employee.pk %}"
+                       class="btn btn-success"
+                       onclick="return confirm('Reactivate account {{ employee.username }}?')">
+                        <i class="fas fa-user-check me-1"></i>Activate
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-8">
+    {% if employee.role == 'sales' %}
+    <div class="row">
+        <div class="col-lg-3 col-sm-6 col-12">
+            <div class="dash-widget">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.total_orders }}</h5>
+                    <h6>Total Orders</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash1.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 col-12">
+            <div class="dash-widget dash1">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.completed_orders }}</h5>
+                    <h6>Completed</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash2.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 col-12">
+            <div class="dash-widget dash2">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.pending_orders }}</h5>
+                    <h6>Pending</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash3.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 col-12">
+            <div class="dash-widget dash3">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.total_revenue|floatformat:0 }}</h5>
+                    <h6>Revenue</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash4.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-shopping-cart me-2"></i>Recent Orders
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Total Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in stats.recent_orders %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'order_detail' order.pk %}">{{ order.order_id }}</a>
+                            </td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>
+                                {% if order.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-clock me-1"></i>{{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'confirmed' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-spinner me-1"></i>{{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'shipped' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-shipping-fast me-1"></i>{{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'delivered' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>{{ order.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>{{ order.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.total_amount|floatformat:0 }}</td>
+                            <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No orders found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% elif employee.role == 'warehouse' %}
+    <div class="row">
+        <div class="col-lg-4 col-sm-6 col-12">
+            <div class="dash-widget">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.total_stock_ins }}</h5>
+                    <h6>Stock In</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash1.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-12">
+            <div class="dash-widget dash1">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.total_stock_outs }}</h5>
+                    <h6>Stock Out</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash2.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-12">
+            <div class="dash-widget dash3">
+                <div class="dash-widgetcontent">
+                    <h5>{{ stats.total_stock_in_value|floatformat:0 }}</h5>
+                    <h6>Import Value</h6>
+                </div>
+                <div class="dash-widgetimg">
+                    <span><img src="{% static 'assets/img/icons/dash4.svg' %}" alt="img"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-warehouse me-2"></i>Recent Stock In Activity
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Supplier</th>
+                            <th>Quantity</th>
+                            <th>Value</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock_in in stats.recent_stock_ins %}
+                        <tr>
+                            <td>{{ stock_in.product.name }}</td>
+                            <td>{{ stock_in.supplier.name }}</td>
+                            <td>{{ stock_in.quantity }} {{ stock_in.product.unit }}</td>
+                            <td>{{ stock_in.total_cost|floatformat:0 }}</td>
+                            <td>{{ stock_in.created_at|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No activity found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No statistics available for this role</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}

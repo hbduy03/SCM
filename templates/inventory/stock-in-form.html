@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Create Stock In</h4>
+<h6>Create new Stock In</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'order_list' %}" class="btn btn-secondary">
+<i class="fas fa-arrow-left me-1"></i>Go back
+</a>
+</div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="card">
+<div class="card-body">
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="row">
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Product</label>
+{{ form.product }}
+<small class="text-danger">{{ form.product.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Supplier</label>
+{{ form.supplier }}
+<small class="text-danger">{{ form.supplier.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Quantity</label>
+{{ form.quantity  }}
+<small class="text-danger">{{ form.quantity.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Unit Price</label>
+{{ form.unit_price }}
+<small class="text-danger">{{ form.unit_price.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-12">
+<div class="form-group">
+<label>Note</label>
+{{ form.note }}
+<small class="text-danger">{{ form.note.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-12">
+<button type="submit" class="btn btn-submit me-2">Submit</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

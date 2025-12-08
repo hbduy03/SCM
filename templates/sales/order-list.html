@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Orders list</h4>
+<h6>Manage Your Orderss</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'add_order' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Add New Order</a>
+</div>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-responsive">
+<table class="table datanew">
+<thead>
+<tr>
+<th>ID</th>
+<th>Customer</th>
+<th>Phone</th>
+<th>Total Money</th>
+<th>Status</th>
+<th>Created at</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for order in orders %}
+<tr>
+<td data-order="{{ order.id }}">#{{order.id}}</td> <td>{{order.customer_name}}</td>
+<td>{{order.customer_phone}}</td>
+<td data-order="{{ order.total_amount }}">
+{% if order.total_amount %}
+{{ order.total_amount|floatformat:0 }} ₫
+{% else %}
+N/A
+{% endif %}
+</td>
+<td>
+{% if order.status == 'pending' %}
+    <span class="badge bg-warning text-dark">
+        <i class="fas fa-clock me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'confirmed' %}
+    <span class="badge bg-info">
+        <i class="fas fa-spinner me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'shipped' %}
+    <span class="badge bg-primary">
+        <i class="fas fa-shipping-fast me-1"></i>{{ order.get_status_display }}
+    </span>
+{% elif order.status == 'delivered' %}
+    <span class="badge bg-success">
+        <i class="fas fa-check-circle me-1"></i>{{ order.get_status_display }}
+    </span>
+{% else %}
+    <span class="badge bg-danger">
+        <i class="fas fa-times-circle me-1"></i>{{ order.get_status_display }}
+    </span>
+{% endif %}
+</td>
+<td data-order="{{ order.created_at|date:'Y-m-d H:i' }}">{{order.created_at|date:"d M Y H:i"}}</td>
+<td>
+<a class="me-3" href="{% url 'order_detail' order.id %}">
+<img src="{% static 'assets/img/icons/eye.svg' %}" alt="Xem">
+</a>
+<a class="me-3" href="{% url 'edit_order' order.id %}">
+<img src="{% static 'assets/img/icons/edit.svg' %}" alt="Sửa">
+</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+{% endblock %}

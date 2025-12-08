@@ -1,0 +1,385 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Edit Order</h4>
+<h6>Edit Order - #{{ order.order_code }}</h6>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="card">
+<div class="card-body">
+<form method="POST" id="orderEditForm">
+{% csrf_token %}
+
+<div class="alert alert-warning">
+<i class="fas fa-exclamation-triangle me-2"></i>
+<strong>Note:</strong> You can only edit orders with "Pending" status.
+</div>
+
+<div class="row">
+<div class="col-lg-12">
+<div class="form-group-header">
+    <h5 class="card-title mb-3">
+        <i class="fas fa-user me-2"></i>Customer Information
+    </h5>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-6 col-12">
+<div class="form-group">
+    <label>Customer Name <span class="text-danger">*</span></label>
+    <input type="text" name="customer_name" class="form-control"
+           value="{{ order.customer_name }}" required>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-6 col-12">
+<div class="form-group">
+    <label>Phone Number <span class="text-danger">*</span></label>
+    <input type="text" name="customer_phone" class="form-control"
+           value="{{ order.customer_phone }}" required>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-6 col-12">
+<div class="form-group">
+    <label>Email</label>
+    <input type="email" name="customer_email" class="form-control"
+           value="{{ order.customer_email }}">
+</div>
+</div>
+
+<div class="col-lg-12">
+<div class="form-group">
+    <label>Delivery Address <span class="text-danger">*</span></label>
+    <textarea name="customer_address" class="form-control" rows="2" required>{{ order.customer_address }}</textarea>
+</div>
+</div>
+</div>
+
+<hr class="my-4">
+
+<div class="row">
+<div class="col-lg-12">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="card-title">
+        <i class="fas fa-shopping-cart me-2"></i>Order Items
+    </h5>
+    <button type="button" class="btn btn-primary btn-sm" onclick="addProductRow()">
+        <i class="fas fa-plus me-1"></i>Add Product
+    </button>
+</div>
+</div>
+
+<div class="col-lg-12">
+<div class="table-responsive">
+    <table class="table table-bordered" id="productTable">
+        <thead class="table-light">
+            <tr>
+                <th width="35%">Product</th>
+                <th width="15%">Unit Price</th>
+                <th width="15%">Quantity</th>
+                <th width="15%">Unit</th>
+                <th width="15%">Subtotal</th>
+                <th width="5%"></th>
+            </tr>
+        </thead>
+        <tbody id="productList">
+            {% for item in order_items %}
+            <tr class="product-row existing-row" data-item-id="{{ item.id }}">
+                <td>
+                    <select name="product_id[]" class="form-control product-select" required>
+                        <option value="">-- Select Product --</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}"
+                                data-price="{{ product.price }}"
+                                data-unit="{{ product.unit }}"
+                                data-stock="{{ product.inventory.quantity }}"
+                                {% if product.id == item.product.id %}selected{% endif %}>
+                            {{ product.name }} - {{ product.code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control price-display"
+                           value="{{ item.unit_price|floatformat:0 }} ₫" readonly>
+                    <input type="hidden" name="unit_price[]" value="{{ item.unit_price }}">
+                </td>
+                <td>
+                    <input type="number" name="quantity[]" class="form-control quantity-input"
+                           value="{{ item.quantity }}" min="1" required>
+                </td>
+                <td>
+                    <input type="text" class="form-control unit-display"
+                           value="{{ item.product.unit }}" readonly>
+                </td>
+                <td>
+                    <input type="text" class="form-control subtotal-display"
+                           value="{{ item.subtotal|floatformat:0 }} ₫" readonly>
+                    <input type="hidden" name="subtotal[]" value="{{ item.subtotal }}">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm btn-remove-row">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                <td colspan="2">
+                    <strong class="text-danger" id="totalAmount">{{ order.total_amount|floatformat:0 }} ₫</strong>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+</div>
+</div>
+
+<hr class="my-4">
+
+<div class="row">
+<div class="col-lg-9">
+<div class="form-group">
+    <label>Order Note</label>
+    <textarea name="note" class="form-control" rows="3">{{ order.note }}</textarea>
+</div>
+</div>
+
+<div class="col-lg-3">
+<div class="form-group">
+    <label>Payment Method</label>
+    <select name="payment_method" class="form-control">
+        <option value="cash" {% if order.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+        <option value="transfer" {% if order.payment_method == 'transfer' %}selected{% endif %}>Bank Transfer</option>
+        <option value="cod" {% if order.payment_method == 'cod' %}selected{% endif %}>COD</option>
+    </select>
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-lg-12">
+<button type="submit" class="btn btn-submit me-2">
+    <i class="fas fa-save me-1"></i>Save Changes
+</button>
+<a href="{% url 'order_detail' order.pk %}" class="btn btn-cancel">
+    <i class="fas fa-times me-1"></i>Cancel
+</a>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+
+<script id="products-data" type="application/json">
+[
+    {% for product in products %}
+    {
+        "id": {{ product.id }},
+        "name": "{{ product.name|escapejs }}",
+        "code": "{{ product.code|escapejs }}",
+        "price": {{ product.price }},
+        "unit": "{{ product.unit|escapejs }}",
+        "stock": {{ product.inventory.quantity }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script>
+let rowCount = 0;
+let productsData = [];
+
+// Load products data
+document.addEventListener('DOMContentLoaded', function() {
+const dataScript = document.getElementById('products-data');
+if (dataScript) {
+    productsData = JSON.parse(dataScript.textContent);
+}
+
+// Thêm 1 dòng sản phẩm mặc định
+addProductRow();
+});
+
+function addProductRow() {
+rowCount++;
+
+// Tạo options cho select sản phẩm
+let productOptions = '<option value="">-- Chọn sản phẩm --</option>';
+productsData.forEach(product => {
+    productOptions += `<option value="${product.id}"
+                              data-price="${product.price}"
+                              data-unit="${product.unit}"
+                              data-stock="${product.stock}">
+                        ${product.name} - ${product.code} (Còn: ${product.stock} ${product.unit})
+                      </option>`;
+});
+
+const html = `
+    <tr class="product-row" id="row-${rowCount}">
+        <td>
+            <select name="product_id[]" class="form-control product-select"
+                    onchange="updateProductInfo(${rowCount})" required>
+                ${productOptions}
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control" id="price-${rowCount}" readonly>
+            <input type="hidden" name="unit_price[]" id="unit-price-${rowCount}">
+        </td>
+        <td>
+            <input type="number" name="quantity[]" class="form-control quantity-input"
+                   id="quantity-${rowCount}" min="1" value="1"
+                   onchange="calculateRowTotal(${rowCount})" required>
+        </td>
+        <td>
+            <input type="text" class="form-control" id="unit-${rowCount}" readonly>
+        </td>
+        <td>
+            <input type="text" class="form-control" id="subtotal-${rowCount}" readonly>
+            <input type="hidden" name="subtotal[]" id="subtotal-value-${rowCount}">
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${rowCount})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+`;
+
+document.getElementById('productList').insertAdjacentHTML('beforeend', html);
+}
+
+function updateProductInfo(rowId) {
+const select = document.querySelector(`#row-${rowId} .product-select`);
+const selectedOption = select.options[select.selectedIndex];
+
+if (selectedOption.value) {
+    const price = parseFloat(selectedOption.getAttribute('data-price'));
+    const unit = selectedOption.getAttribute('data-unit');
+    const stock = parseInt(selectedOption.getAttribute('data-stock'));
+
+    // Cập nhật thông tin
+    document.getElementById(`price-${rowId}`).value = formatMoney(price) + ' ₫';
+    document.getElementById(`unit-price-${rowId}`).value = price;
+    document.getElementById(`unit-${rowId}`).value = unit;
+    document.getElementById(`quantity-${rowId}`).max = stock;
+
+    // Tính tiền
+    calculateRowTotal(rowId);
+} else {
+    // Reset
+    document.getElementById(`price-${rowId}`).value = '';
+    document.getElementById(`unit-price-${rowId}`).value = '';
+    document.getElementById(`unit-${rowId}`).value = '';
+    document.getElementById(`subtotal-${rowId}`).value = '';
+    document.getElementById(`subtotal-value-${rowId}`).value = '';
+    calculateTotal();
+}
+}
+
+function calculateRowTotal(rowId) {
+const select = document.querySelector(`#row-${rowId} .product-select`);
+const quantity = parseInt(document.getElementById(`quantity-${rowId}`).value) || 0;
+
+if (select.value && quantity > 0) {
+    const price = parseFloat(document.getElementById(`unit-price-${rowId}`).value);
+    const subtotal = price * quantity;
+
+    document.getElementById(`subtotal-${rowId}`).value = formatMoney(subtotal) + ' ₫';
+    document.getElementById(`subtotal-value-${rowId}`).value = subtotal;
+} else {
+    document.getElementById(`subtotal-${rowId}`).value = '';
+    document.getElementById(`subtotal-value-${rowId}`).value = '';
+}
+
+calculateTotal();
+}
+
+function calculateTotal() {
+let total = 0;
+
+document.querySelectorAll('.product-row').forEach(row => {
+    const subtotalInput = row.querySelector('input[name="subtotal[]"]');
+    if (subtotalInput && subtotalInput.value) {
+        total += parseFloat(subtotalInput.value);
+    }
+});
+
+document.getElementById('totalAmount').textContent = formatMoney(total) + ' ₫';
+}
+
+function removeRow(rowId) {
+const row = document.getElementById(`row-${rowId}`);
+if (row) {
+    row.remove();
+    calculateTotal();
+
+    // Nếu xóa hết sản phẩm, thêm 1 dòng mới
+    if (document.querySelectorAll('.product-row').length === 0) {
+        addProductRow();
+    }
+}
+}
+
+function formatMoney(amount) {
+return parseFloat(amount).toLocaleString('vi-VN');
+}
+
+// Validate form trước khi submit
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+const rows = document.querySelectorAll('.product-row');
+let hasProduct = false;
+
+rows.forEach(row => {
+    const select = row.querySelector('.product-select');
+    if (select && select.value) {
+        hasProduct = true;
+    }
+});
+
+if (!hasProduct) {
+    e.preventDefault();
+    alert('Vui lòng chọn ít nhất một sản phẩm!');
+    return false;
+}
+
+// Kiểm tra số lượng không vượt quá tồn kho
+let stockError = false;
+rows.forEach(row => {
+    const select = row.querySelector('.product-select');
+    if (select && select.value) {
+        const stock = parseInt(select.options[select.selectedIndex].getAttribute('data-stock'));
+        const quantity = parseInt(row.querySelector('.quantity-input').value);
+
+        if (quantity > stock) {
+            stockError = true;
+            alert(`Sản phẩm "${select.options[select.selectedIndex].text}" không đủ hàng trong kho!`);
+        }
+    }
+});
+
+if (stockError) {
+    e.preventDefault();
+    return false;
+}
+});
+</script>
+
+{% endblock %}

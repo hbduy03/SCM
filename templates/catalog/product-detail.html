@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Product Details</h4>
+<h6>Full details of a product</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'product_list' %}" class="btn btn-secondary">
+<i class="fas fa-arrow-left me-1"></i>Go back
+</a>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="row">
+<div class="col-lg-8 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="productdetails">
+<ul class="product-bar">
+<li>
+<h4>Product</h4>
+<h6>{{ product.name }}</h6>
+</li>
+<li>
+<h4>Product ID</h4>
+<h6>{{ product.product_id }}</h6>
+</li>
+<li>
+<h4>Category</h4>
+<h6>{{ product.category.name }}</h6>
+</li>
+<li>
+<h4>Unit</h4>
+<h6>{{ product.unit }}</h6>
+</li>
+<li>
+<h4>Price</h4>
+<h6>{{ product.price }} đ</h6>
+</li>
+<li>
+<h4>Quantity</h4>
+<h6>
+{% if product.inventory.is_low_stock %}
+<span class="badge bg-danger">{{ product.inventory.quantity }}</span>
+{% else %}
+<span class="badge bg-success">{{ product.inventory.quantity }}</span>
+{% endif %}
+</h6>
+</li>
+<li>
+<h4>Created Date</h4>
+<h6>{{ product.created_at|date:"d M Y, h:i A" }}</h6>
+</li>
+<li>
+<h4>Is Activate</h4>
+<h6>
+{% if product.is_active %}
+<span class="badge bg-success"><i class="fas fa-check"></i></span>
+{% else %}
+<span class="badge bg-danger"><i class="fas fa-times"></i></span>
+{% endif %}
+</h6>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="product-description">
+<h5 class="mb-3">Description</h5>
+<p>{{ product.description|default:"No description available" }}</p>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="product-actions">
+<a href="{% url 'edit_product' product.id %}" class="btn btn-submit me-2">
+<img src="{% static 'assets/img/icons/edit.svg' %}" alt="img" class="me-1">
+Edit Product
+</a>
+<a href="{% url 'delete_product' product.id %}"
+class="btn btn-cancel"
+onclick="return confirm('Are you sure you want to delete this product?')">
+<img src="{% static 'assets/img/icons/delete.svg' %}" alt="img" class="me-1">
+Delete Product
+</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-lg-4 col-sm-12">
+<div class="card">
+<div class="card-body">
+<div class="slider-product-details">
+<div class="product-img">
+{% if product.image %}
+<img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+{% else %}
+<img src="{% static 'assets/img/product/noimage.png' %}" alt="No Image" class="img-fluid">
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="stock-status">
+<h5 class="mb-3">Stock Status</h5>
+<div class="d-flex justify-content-between align-items-center">
+<span>Current Stock:</span>
+<strong>{{ product.inventory.quantity }} {{ product.unit }}</strong>
+</div>
+<div class="d-flex justify-content-between align-items-center mt-2">
+<span>Status:</span>
+{% if product.inventory.is_low_stock %}
+<span class="badge bg-danger">Low Stock</span>
+{% elif product.inventory.quantity == 0 %}
+<span class="badge bg-secondary">Out of Stock</span>
+{% else %}
+<span class="badge bg-success">In Stock</span>
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

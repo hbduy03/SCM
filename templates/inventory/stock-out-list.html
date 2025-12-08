@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>Stock Out List</h4>
+<h6>Manage stock out records</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'add_stock_out' %}" class="btn btn-added"><img src="{% static 'assets/img/icons/plus.svg' %}" alt="img" class="me-1">Create New Stock Out</a>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+<div class="table-top">
+</div>
+
+<div class="card mb-0" id="filter_inputs">
+</div>
+
+<div class="table-responsive">
+<table class="table datanew">
+<thead>
+<tr>
+<th>ID</th>
+<th>Product Name</th>
+<th>Type</th>
+<th>Order</th>
+<th>Qty</th>
+<th>Updated Qty</th>
+<th>Active?</th>
+<th>Approved By</th>
+<th>Created By</th>
+<th>Date</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for stock_out in stock_outs %}
+<tr>
+<td>{{stock_out.id}}</td>
+<td class="productimgname">
+<a href="javascript:void(0);" class="product-img">
+{% if stock_out.product.image %}
+<img src="{{ stock_out.product.image.url }}" alt="product">
+{% else %}
+<img src="{% static 'assets/img/product/noimage.png' %}" alt="Product Image">
+{% endif %}
+</a>
+<a href="javascript:void(0);" class="product-name">{{ stock_out.product.name }}</a>
+</td>
+<td>{{stock_out.get_type_display}}</td>
+<td>
+{% if stock_out.order %}
+<a href="{% url 'order_detail' stock_out.order.id %}">{{stock_out.order.order_id}}</a>
+{% else %}
+N/A
+{% endif %}
+</td>
+<td><h6><span class="badge bg-danger">-{{stock_out.quantity}}</span></h6></td>
+<td><h6><span class="badge text-green">{{stock_out.updated_quantity}}</span></h6></td>
+<td>
+{% if stock_out.is_disable %}
+<span class="badge bg-danger">No</span>
+{% else %}
+<span class="badge bg-success">Yes</span>
+{% endif %}
+</td>
+<td>
+{% if stock_out.approved_by %}
+{{ stock_out.approved_by.get_full_name|default:stock_out.approved_by.username }}
+{% else %}
+<span class="badge bg-warning text-dark">Pending</span>
+{% endif %}
+</td>
+<td>{{stock_out.created_by.get_full_name|default:stock_out.created_by.username|default:"N/A"}}</td>
+<td>{{stock_out.created_at|date:"d M Y H:i"}}</td>
+<td>
+<a class="me-3" href="{% url 'stock_out_detail' stock_out.id %}">
+<img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

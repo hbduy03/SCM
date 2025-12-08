@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>User List</h4>
+                <h6>Manage system users</h6>
+            </div>
+            <div class="page-btn">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Contact SUPERADMIN to create new user
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-sm-6 col-12">
+                <div class="dash-widget">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash1.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ total_users }}</h5>
+                        <h6>Total Users</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-6 col-12">
+                <div class="dash-widget dash1">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash2.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ active_users }}</h5>
+                        <h6>Active</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-6 col-12">
+                <div class="dash-widget dash2">
+                    <div class="dash-widgetimg">
+                        <span><img src="{% static 'assets/img/icons/dash3.svg' %}" alt="img"></span>
+                    </div>
+                    <div class="dash-widgetcontent">
+                        <h5>{{ inactive_users }}</h5>
+                        <h6>Inactive</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table datanew">
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined Date</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td class="productimgname">
+                                    {% if user.avatar %}
+                                        <a href="javascript:void(0);" class="product-img">
+                                            <img src="{{ user.avatar.url }}" alt="avatar">
+                                        </a>
+                                    {% else %}
+                                        <div class="avatar-placeholder">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    {% endif %}
+                                    <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                                    <small class="text-muted">@{{ user.username }}</small>
+                                </td>
+                                <td>{{ user.email|default:"--" }}</td>
+                                <td>{{ user.phone|default:"--" }}</td>
+                                <td>
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge text-dark">{{ user.get_role_display }}</span>
+                                    {% elif user.role == 'sales' %}
+                                        <span class="badge text-dark">{{ user.get_role_display }}</span>
+                                    {% elif user.role == 'warehouse' %}
+                                        <span class="badge text-dark">{{ user.get_role_display }}</span>
+                                    {% else %}
+                                        <span class="badges bg-lightgrey">{{ user.get_role_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badges text-dark bg-lightgreen">Active</span>
+                                    {% else %}
+                                        <span class="badges text-dark bg-lightred">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                <td class="text-center">
+                                    <a class="me-3" href="{% url 'user_detail' user.pk %}">
+                                        <img src="{% static 'assets/img/icons/eye.svg' %}" alt="img">
+                                    </a>
+
+                                    {% if request.user.role == 'admin' and user.role != 'admin' %}
+                                        {% if user.is_active %}
+                                            <a class="me-3" href="{% url 'user_deactivate' user.pk %}"
+                                               onclick="return confirm('Deactivate account {{ user.username }}?')">
+                                                <img src="{% static 'assets/img/icons/delete.svg' %}" alt="img">
+                                            </a>
+                                        {% else %}
+                                            <a class="me-3" href="{% url 'user_activate' user.pk %}"
+                                               onclick="return confirm('Reactivate account {{ user.username }}?')">
+                                                <img src="{% static 'assets/img/icons/plus1.svg' %}" alt="img">
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    background: #e0e0e0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+</style>
+
+{% endblock %}

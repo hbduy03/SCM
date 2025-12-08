@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Login Template</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="icon" href="img/login.ico"/>
+
+	<meta name="author" content="Yuli Petrilli">
+    <meta name="description" content="Free login template made with Bootstrap 5">
+
+	<!-- / Bootstrap Core -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- / FontAwesome -->
+	<link rel="stylesheet" type="text/css" href="{% static 'assets/font/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+	<!-- / Custom style -->
+	<link rel="stylesheet" type="text/css" href="{% static 'assets/css/auth-style.css' %}">
+</head>
+<body>
+
+<main>
+	<div class="form-main-container">
+       <div class="form-wrapper">
+          <div class="form-header">
+             <span class="form-title">Login to <strong>Dream Pos</strong></span>
+          </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+          <form class="form-content" method="post" action="{% url 'user_login' %}">
+             {% csrf_token %}
+
+             {{ form.media }}
+
+             <div class="input-wrapper">
+                {{ form.username }}
+                <span class="input-style-focus"></span>
+             </div>
+
+             <div class="input-wrapper">
+                <div class="input-group">
+                   {{ form.password }}
+                   <span class="form-control-focus"></span>
+
+                   <div class="input-group-addon" onclick="passwordVisibility();">
+                      <i class="fa fa-eye" id="showPass"></i>
+                      <i class="fa fa-eye-slash d-none" id="hidePass"></i>
+                   </div>
+                </div>
+             </div>
+
+             <div class="input-wrapper mt-3 mb-3">
+                 {{ form.captcha }}
+
+                 {% if form.captcha.errors %}
+                    <div class="text-danger small">{{ form.captcha.errors }}</div>
+                 {% endif %}
+             </div>
+
+             <button class="button-style w-100">Login</button>
+          </form>
+       </div>
+    </div>
+</main>
+
+<script src="{% static 'assets/js/password-visibility.js' %}"></script>
+</body>
+</html>

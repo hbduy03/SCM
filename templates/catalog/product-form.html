@@ -1,0 +1,199 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrapper">
+<div class="content">
+<div class="page-header">
+<div class="page-title">
+<h4>{{title}}</h4>
+<h6>Manage your product</h6>
+</div>
+<div class="page-btn">
+<a href="{% url 'product_list' %}" class="btn btn-secondary">
+<i class="fas fa-arrow-left me-1"></i>Go back
+</a>
+</div>
+</div>
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+<div class="card">
+<div class="card-body">
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="row">
+
+<div class="form-group">
+    <label>Product Name
+        <button type="button" id="btn-ai-detect" class="btn btn-sm btn-success ms-2" style="font-size: 10px; padding: 2px 8px;">
+            <strong>✨ Auto Detect</strong>
+        </button>
+    </label>
+    {{ form.name }}
+    <small class="text-danger">{{ form.name.errors }}</small>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Product ID</label>
+{{ form.product_id }}
+<small class="text-danger">{{ form.product_id.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Category</label>
+{{ form.category }}
+<small class="text-danger">{{ form.category.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Unit</label>
+{{ form.unit }}
+<small class="text-danger">{{ form.unit.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Price</label>
+{{ form.price }}
+<small class="text-danger">{{ form.price.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-3 col-sm-6 col-12">
+<div class="form-group">
+<label>Active Status</label>
+<div class="form-check">
+{{ form.is_active }}
+<label class="form-check-label ms-1">Is Active</label>
+</div>
+<small class="text-danger">{{ form.is_active.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-12">
+<div class="form-group">
+<label>Description</label>
+{{ form.description }}
+<small class="text-danger">{{ form.description.errors }}</small>
+</div>
+</div>
+
+<div class="col-lg-12">
+<div class="form-group">
+<label> Product Image</label>
+<div class="image-upload">
+{{ form.image }}
+<div class="image-uploads">
+<img src="{% static 'assets/img/icons/upload.svg' %}" alt="img">
+<h4>Drag and drop a file to upload</h4>
+</div>
+<small class="text-danger">{{ form.image.errors }}</small>
+</div>
+</div>
+</div>
+
+<div class="col-lg-12">
+<button type="submit" class="btn btn-submit me-2">Submit</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+</div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- CẤU HÌNH URL ---
+        const API_URL = "/ai/api/classify-upload/";
+        // --------------------
+
+        const btnDetect = document.getElementById('btn-ai-detect');
+        const nameInput = document.querySelector('#id_name') || document.querySelector('input[name="name"]');
+
+        // Tìm input file trong vùng upload (kể cả khi bị ẩn)
+        const uploadArea = document.querySelector('.image-upload');
+        const fileInput = uploadArea ? uploadArea.querySelector('input[type="file"]') : document.querySelector('#id_image');
+
+        if (btnDetect) {
+            btnDetect.addEventListener('click', function() {
+                // 1. Kiểm tra xem đã chọn ảnh chưa
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    alert("⚠️ Vui lòng chọn hoặc kéo thả ảnh sản phẩm trước khi bấm nút!");
+                    return;
+                }
+
+                // 2. Hiệu ứng nút bấm (Loading)
+                const originalText = btnDetect.innerHTML;
+                btnDetect.innerHTML = "⏳ Scanning...";
+                btnDetect.disabled = true;
+
+                // 3. Lấy file và chuẩn bị gửi
+                const file = fileInput.files[0];
+                const formData = new FormData();
+                formData.append('image', file);
+
+                // Lấy CSRF Token để không bị lỗi 403
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+                console.log("📡 Đang gửi ảnh lên:", API_URL);
+
+                // 4. Gọi API
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                })
+                .then(response => {
+                    if (response.status === 404) throw new Error("Sai đường dẫn API (404). Kiểm tra urls.py");
+                    if (!response.ok) throw new Error("Lỗi Server: " + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("✅ Kết quả:", data);
+
+                    if (data.success) {
+                        // Điền form
+                        if (nameInput) {
+                            nameInput.value = data.product_name;
+
+                            // Hiệu ứng nháy xanh báo thành công
+                            nameInput.style.transition = "all 0.5s";
+                            nameInput.style.backgroundColor = "#d4edda";
+                            nameInput.style.borderColor = "#28a745";
+                            setTimeout(() => {
+                                nameInput.style.backgroundColor = "";
+                                nameInput.style.borderColor = "";
+                            }, 1500);
+                        }
+                    } else {
+                        alert("⚠️ AI không nhận diện được: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Lỗi:", error);
+                    alert("Lỗi kết nối: " + error.message);
+                })
+                .finally(() => {
+                    // Trả lại nút bấm như cũ
+                    btnDetect.innerHTML = originalText;
+                    btnDetect.disabled = false;
+                });
+            });
+        } else {
+            console.error("❌ Không tìm thấy nút bấm ID #btn-ai-detect");
+        }
+    });
+</script>
+
+{% endblock %}
+
