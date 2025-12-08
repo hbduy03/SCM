@@ -115,7 +115,7 @@
                                         <td><a href="{% url 'order_detail' order.pk %}">{{ order.order_code }}</a></td>
                                         <td>{{ order.customer_name }}</td>
                                         <td>
-                                            <a class="btn btn-sm btn-success" href="{% url 'order_confirm' order.pk %}">
+                                            <a class="btn btn-sm btn-success" href="{% url 'confirm_order' order.pk %}">
                                                 <i class="fas fa-check me-1"></i>Xuất kho
                                             </a>
                                         </td>
