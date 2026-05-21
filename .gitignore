@@ -7,3 +7,4 @@
 /media/product/
 /.env
 /media/models/forecasting_model.pkl
+.idea/
