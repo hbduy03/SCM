@@ -1,20 +1,36 @@
 # SCM: Supply Chain Management Project
 
 ## Introduction
-This is a Supply Chain Management Project for managing and optimize 
+A Supply Chain Management system built to automate stock-in/out workflows, enforce role-based access across warehouse and sales operations, and apply AI-driven forecasting to optimize inventory decisions.
 
 ## Main Features
 - **Order management:** entering and updating orders, and real-time tracking of order statuses.
-- **Inventory management:** monitoring stock levels, automated low-stock alerts to prevent shortages.
+- **Inventory management:** monitoring stock levels, atomic stock deduction with ACID-compliant transactions to prevent race conditions, and automated low-stock alerts to prevent shortages.
 - **Demand forecasting:** forecasting module using statistical and machine learning models to predict future inventory needs.
-- **Employee management:** including admin, warehouse staff and sales staff, with role-based access control and action history tracking optimized for fast-checking.
+- **Employee management:**  4 roles — SuperAdmin, Admin, Warehouse Staff, Sales Staff — each with isolated permissions, dedicated UI, and action history tracking optimized for fast-checking.
 - **Reporting and visualization:** basic and effecective staffs' dashboard for KPIs, data visualizations for quick decision-making.
 - **AI-Powered Product Entry (Auto Detect):** Add a deep learning model (PyTorch) to automatically detect the item. Users simply upload a product image and click 'Auto Detect' button, the result will auto-fill the product name.
 ## Technology Stack 
 - **Language:** Python 3.11
-- **Web Framework:** Django
+- **Web Framework:** Django (MVT architecture)
 - **Database:** PostgreSQL
 - **AI & Data:** pandas, numpy, scikit-learn, statsmodels, matplotlib, pytorch
+
+## AI Models
+### Demand Forecasting
+Trained on the [Historical Product Demand](https://www.kaggle.com/datasets/felixzhao/productdemandforecasting) dataset — a large-scale real-world transaction history covering seasonal patterns and consumption trends.
+- Preprocessing: missing value handling, time-series aggregation
+- Evaluation: **MAE ~6,500 units**
+
+### Product Auto-Detect (Image Classification)
+Uses **MobileNetV2** pretrained on ImageNet — chosen for its lightweight architecture optimized for CPU inference without sacrificing accuracy.
+- Input pipeline: Resize (256px) → Center Crop (224px) → Normalize (RGB)
+- **Top-1 Accuracy: 71.88%** | **Top-5 Accuracy: 90.29
+
+## Security
+- **Password hashing:** PBKDF2 + SHA256 + random salt — passwords are never stored in plain text
+- **Anti-bot:** Google reCAPTCHA v2 on login and password-change endpoints
+- **CSRF protection:** Django `CsrfViewMiddleware` enforced on all state-changing requests
 
 ## Getting Started (Docker Setup)
 To run this project locally, ensure you have Docker and Docker Desktop installed.
